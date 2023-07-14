@@ -13,7 +13,10 @@ function main()
 	T = 0:Δt:30
 	M = length(T)
 
-	for α in [2.0 1.8 1.6 1.4]
+	Alphas = [2.0 1.8 1.6 1.4]
+	final_slices = zeros(N,length(Alphas))
+	for i in 1:length(Alphas)
+		α = Alphas[i]
 		@info "α = $α"
 
 		u = initial_conditions(N,M)
@@ -26,7 +29,30 @@ function main()
 		ETDCN!(u, N, M, Δt, A)
 		savefig(figure_1(X, T, u, "Crank Nicolson, α = $α"), "surfaceCN$α.png")
 		savefig(figure_2(X, T, u, "Crank Nicolson, α = $α"), "contour$α.png")
+
+		final_slices[:,i]  = u[:,end]
 	end
+
+	savefig(plot(
+		X, final_slices,
+		label=Alphas .|> x->"α = $x",
+		plot_title="Density at t=30", #TODO: fix hard-coded value
+		xguide="Space (x)",
+		yguide="Density (u)",
+		#linecolor=:gnuplot,
+		linewidth=3.0,
+		levels=0.1:0.1:1.0,
+		#zticks=0.1:0.1:1.0,
+		#grid=false,
+		gridalpha=1.0,
+		gridlinewidth=0.30,
+		minorgrid=true,
+		minorgridalpha=1.0,
+		minorgridlinewidth=0.10,
+
+	), "final_slices.png")
+
+	return
 end
 
 function initial_conditions(N,M)
