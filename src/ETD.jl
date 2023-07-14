@@ -2,6 +2,33 @@
 using LinearAlgebra
 using Plots
 
+function main()
+
+	# Space dimension
+	Δx = 1
+	X = -100:Δx:100
+	N = length(X)
+
+	# Time dimension
+	Δt = 0.1
+	T = 0:Δt:30
+	M = length(T)
+
+	for α in [2.0 1.8 1.6 1.4]
+		@info "α = $α"
+
+		u = initial_conditions(N,M)
+		A = transfer_matrix(α, N, Δx)
+
+		ETDBE!(u, N, M, Δt, A)
+		savefig(figure_1(X, T, u, "Backward Euler, α = $α"), "BE$α.png")
+		
+		ETDCN!(u, N, M, Δt, A)
+		savefig(figure_1(X, T, u, "Crank Nicolson, α = $α"), "CN$α.png")
+	end
+
+end
+
 function initial_conditions(N,M)
 	u = zeros(N,M)
 
@@ -12,19 +39,19 @@ function initial_conditions(N,M)
 	return u
 end
 
-# Reaction term
-function f(v,t)
-	K = 1.0
-	r = 0.25
-	return r*v.*(1 .- v/K)
-end
-
 function transfer_matrix(α, N, Δx)
 	D = 0.1 # diffusion coefficient
 	length1 = 1:1.0:N-2
 	A1 = diagm(-D/Δx.^α*(2sin.(length1.*π/(2*(N-1)))).^α)
 	P = sin.(length1'.*length1.*π/(N-1));
 	return P\A1*P
+end
+
+# Reaction term
+function f(v,t)
+	K = 1.0
+	r = 0.25
+	return r*v.*(1 .- v/K)
 end
 
 # Exponential time differencing, Backward Euler Scheme
@@ -67,32 +94,5 @@ function figure_1(X,T,u, title)
 	)
 end
 
-function main()
-
-	# Space dimension
-	Δx = 1
-	X = -100:Δx:100
-	N = length(X)
-
-	# Time dimension
-	Δt = 0.1
-	T = 0:Δt:30
-	M = length(T)
-
-	for α in [2.0 1.8 1.6 1.4]
-		@info "α = $α"
-
-		u = initial_conditions(N,M)
-		A = transfer_matrix(α, N, Δx)
-
-		ETDBE!(u, N, M, Δt, A)
-		savefig(figure_1(X, T, u, "Backward Euler, α = $α"), "BE$α.png")
-		
-		ETDCN!(u, N, M, Δt, A)
-		savefig(figure_1(X, T, u, "Crank Nicolson, α = $α"), "CN$α.png")
-	end
-
-end # main
-
 main()
-	
+
