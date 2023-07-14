@@ -3,7 +3,6 @@ using LinearAlgebra
 using Plots
 
 function main()
-
 	# Space dimension
 	Δx = 1
 	X = -100:Δx:100
@@ -21,12 +20,13 @@ function main()
 		A = transfer_matrix(α, N, Δx)
 
 		ETDBE!(u, N, M, Δt, A)
-		savefig(figure_1(X, T, u, "Backward Euler, α = $α"), "BE$α.png")
+		savefig(figure_1(X, T, u, "Backward Euler, α = $α"), "surfaceBE$α.png")
+		savefig(figure_2(X, T, u, "Backward Euler, α = $α"), "contourBE$α.png")
 		
 		ETDCN!(u, N, M, Δt, A)
-		savefig(figure_1(X, T, u, "Crank Nicolson, α = $α"), "CN$α.png")
+		savefig(figure_1(X, T, u, "Crank Nicolson, α = $α"), "surfaceCN$α.png")
+		savefig(figure_2(X, T, u, "Crank Nicolson, α = $α"), "contour$α.png")
 	end
-
 end
 
 function initial_conditions(N,M)
@@ -74,23 +74,42 @@ function ETDCN!(u, N, M, Δt, A)
 	end
 end
 
-# Surface plots
+# Surface plot
 function figure_1(X,T,u, title)
 	return plot(
 		X[1:end÷41:end],
 		T[1:end÷21:end],
 		u'[1:end÷21:end,1:end÷41:end],
-		linetype=:wireframe,
 		plot_title=title,
+		xguide="Space (x)",
+		yguide="Time (t)",
+		zguide="Density (u)",
+		linetype=:wireframe,
 		#grid=false,
 		gridalpha=1.0,
 		gridlinewidth=0.30,
 		minorgrid=true,
 		minorgridalpha=1.0,
 		minorgridlinewidth=0.10,
+	)
+end
+
+# Contour plot
+function figure_2(X,T,u, title)
+	return contour(
+		X,
+		T,
+		u',
+		plot_title=title,
 		xguide="Space (x)",
 		yguide="Time (t)",
-		zguide="Density (u)",
+		color=:gnuplot,
+		#grid=false,
+		gridalpha=1.0,
+		gridlinewidth=0.30,
+		minorgrid=true,
+		minorgridalpha=1.0,
+		minorgridlinewidth=0.10,
 	)
 end
 
