@@ -13,8 +13,9 @@ function main()
 	T = 0:Δt:30
 	M = length(T)
 
-	Alphas = [2.0 1.8 1.6 1.4]
+	Alphas = [2.0 1.99 1.9 1.7]
 	final_slices = zeros(N,length(Alphas))
+	furthest_spread = zeros(M,length(Alphas))
 	for i in 1:length(Alphas)
 		α = Alphas[i]
 		@info "α = $α"
@@ -30,13 +31,14 @@ function main()
 		savefig(figure_1(X, T, u, "Crank Nicolson, α = $α"), "surfaceCN$α.png")
 		savefig(figure_2(X, T, u, "Crank Nicolson, α = $α"), "contour$α.png")
 
-		final_slices[:,i]  = u[:,end]
+		final_slices[:,i] = u[:,end]
+		furthest_spread[:,i] = 1:M .|> y -> findlast(x->x>1E-6, u[:,y])
 	end
 
-	savefig(plot(
+ 	savefig(plot(
 		X, final_slices,
 		label=Alphas .|> x->"α = $x",
-		plot_title="Density at t=30", #TODO: fix hard-coded value
+		plot_title="density at t=30", #todo: fix hard-coded value
 		xguide="Space (x)",
 		yguide="Density (u)",
 		#linecolor=:gnuplot,
@@ -49,8 +51,25 @@ function main()
 		minorgrid=true,
 		minorgridalpha=1.0,
 		minorgridlinewidth=0.10,
-
 	), "final_slices.png")
+
+ 	savefig(plot(
+		T, furthest_spread,
+		label=Alphas .|> x->"α = $x",
+		plot_title="Furthest spread",
+		xguide="Time (t)",
+		yguide="Space (x)",
+		#linecolor=:gnuplot,
+		linewidth=3.0,
+		levels=0.1:0.1:1.0,
+		#zticks=0.1:0.1:1.0,
+		#grid=false,
+		gridalpha=1.0,
+		gridlinewidth=0.30,
+		minorgrid=true,
+		minorgridalpha=1.0,
+		minorgridlinewidth=0.10,
+	), "furthest_spread.png")
 
 	return
 end
